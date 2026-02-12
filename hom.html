@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniPro Marketplace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #3a7ca5;
+            --secondary: #81c3d7;
+            --accent: #ff7e5f;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+            --gray: #6c757d;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --campus-green: #2ecc71;
+            --campus-blue: #3498db;
+            --men-color: #3498db;
+            --women-color: #e84393;
+            --unisex-color: #9b59b6;
+            --sa-green: #007749;
+            --sa-yellow: #FFB81C;
+            --sa-red: #DE3831;
+            --sa-blue: #002395;
+            --sa-black: #000000;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        /* South Africa Time & Date Banner */
+        .sa-time-banner {
+            background: linear-gradient(90deg, var(--sa-black) 0%, var(--sa-green) 20%, var(--sa-yellow) 40%, var(--sa-red) 60%, var(--sa-blue) 80%, var(--sa-black) 100%);
+            color: white;
+            padding: 8px 0;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+        
+        .sa-time-banner .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .sa-time-banner i {
+            margin-right: 8px;
+            color: var(--sa-yellow);
+        }
+        
+        .sa-flag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 15px;
+        }
+        
+        .flag-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+        
+        .flag-green { background-color: var(--sa-green); }
+        .flag-yellow { background-color: var(--sa-yellow); }
+        .flag-red { background-color: var(--sa-red); }
+        .flag-blue { background-color: var(--sa-blue); }
+        .flag-black { background-color: var(--sa-black); }
+        
+        .time-display {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .time-part, .date-part {
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 42px;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            color: var(--campus-blue);
+            font-size: 28px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            color: var(--dark);
+        }
+        
+        .logo span {
+            color: var(--accent);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 600;
+            transition: color 0.3s;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        nav a:hover {
+            color: var(--accent);
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--accent);
+            transition: width 0.3s ease;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        .cart-icon {
+            position: relative;
+            font-size: 22px;
+            color: var(--dark);
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(44, 62, 80, 0.85), rgba(44, 62, 80, 0.9)), url('https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 40px;
+        }
+        
+        .hero h2 {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+        
+        .hero p {
+            font-size: 20px;
+            max-width: 700px;
+            margin: 0 auto 25px;
+        }
+        
+        .campuses {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .campus-tag {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+        }
+        
+        .campus-tag i {
+            margin-right: 5px;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .filter-section h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .filter-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 20px;
+            background-color: var(--light);
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background-color: var(--campus-blue);
+            color: white;
+            border-color: var(--campus-blue);
+        }
+        
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+        
+        .product-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Product Image Slider */
+        .product-slider {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+        }
+        
+        .slider-container {
+            display: flex;
+            transition: transform 0.5s ease;
+            height: 100%;
+        }
+        
+        .slide {
+            min-width: 90%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .slide-number {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        .slider-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+            padding: 0 10px;
+        }
+        
+        .slider-btn {
+            background-color: rgba(255, 255, 255, 0.7);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+        
+        .slider-btn:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Product Info */
+        .product-info {
+            padding: 20px;
+        }
+        
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        
+        .product-category {
+            color: var(--campus-blue);
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .gender-badge {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .gender-men {
+            background-color: var(--men-color);
+            color: white;
+        }
+        
+        .gender-women {
+            background-color: var(--women-color);
+            color: white;
+        }
+        
+        .gender-unisex {
+            background-color: var(--unisex-color);
+            color: white;
+        }
+        
+        .product-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .product-price {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        
+        /* Availability Status */
+        .availability {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .status-in-stock {
+            background-color: var(--success);
+        }
+        
+        .status-low-stock {
+            background-color: var(--warning);
+        }
+        
+        .status-out-of-stock {
+            background-color: var(--danger);
+        }
+        
+        .status-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .quantity {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+        
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+        
+        .campus-badge {
+            background-color: var(--campus-green);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .btn-add-to-cart {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--dark);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 5px;
+        }
+        
+        .btn-add-to-cart:hover {
+            background-color: var(--campus-blue);
+        }
+        
+        .btn-add-to-cart:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        /* Contact Section */
+        .contact-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 50px;
+        }
+        
+        .contact-section h3 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--dark);
+        }
+        
+        .contact-details {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .contact-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .contact-icon {
+            background-color: var(--light);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 24px;
+            color: var(--campus-blue);
+        }
+        
+        .contact-item h4 {
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 40px 0 20px;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .social-links a {
+            color: white;
+            font-size: 22px;
+            transition: color 0.3s;
+        }
+        
+        .social-links a:hover {
+            color: var(--secondary);
+        }
+        
+        .copyright {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            width: 100%;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .hero h2 {
+                font-size: 32px;
+            }
+            
+            .hero p {
+                font-size: 18px;
+                padding: 0 10px;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+            
+            .contact-details {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .product-slider {
+                height: 200px;
+            }
+            
+            .sa-time-banner .container {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .time-display {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            nav ul {
+                gap: 15px;
+            }
+            
+            .product-slider {
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- South Africa Time & Date Banner -->
+    <div class="sa-time-banner">
+        <div class="container">
+            <div class="sa-flag">
+                <span class="flag-color flag-black"></span>
+                <span class="flag-color flag-green"></span>
+                <span class="flag-color flag-yellow"></span>
+                <span class="flag-color flag-red"></span>
+                <span class="flag-color flag-blue"></span>
+                <span style="margin-left: 5px;">South Africa | KwaZulu-Natal</span>
+            </div>
+            <div class="time-display">
+                <div class="date-part">
+                    <i class="far fa-calendar"></i>
+                    <span id="sa-date">Loading...</span>
+                </div>
+                <div class="time-part">
+                    <i class="far fa-clock"></i>
+                    <span id="sa-time">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-store"></i>
+                    <h1>Uni<span>Pro</span></h1>
+                </div>
+                
+                <nav>
+                    <ul>
+                        <li><a href="#home" class="nav-link">Home</a></li>
+                        <li><a href="#products" class="nav-link">Products</a></li>
+                        <li><a href="#contact" class="nav-link">Contact</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="cart-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h2>UniPro Marketplace</h2>
+            <p>Your premier destination for quality clothing with detailed product views. Check availability, multiple angles, and gender specifications.</p>
+            
+            <div class="campuses">
+                <div class="campus-tag"><i class="fas fa-map-marker-alt"></i> Durban University of Technology</div>
+                <div class="campus-tag"><i class="fas fa-map-marker-alt"></i> Ritson Campus</div>
+                <div class="campus-tag"><i class="fas fa-map-marker-alt"></i> Resides at Disney Hieghts</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <!-- Filter Section -->
+        <section class="filter-section" id="products">
+            <h3>Filter by Category</h3>
+            <div class="filter-options">
+                <button class="filter-btn active" data-filter="all">All Items</button>
+                <button class="filter-btn" data-filter="sneakers">Sneakers</button>
+                <button class="filter-btn" data-filter="tshirt">T-Shirts</button>
+                <button class="filter-btn" data-filter="trousers">Trousers</button>
+                <button class="filter-btn" data-filter="hoodie">Hoodies</button>
+                <button class="filter-btn" data-filter="jacket">Jackets</button>
+            </div>
+        </section>
+
+        <!-- Products Grid -->
+        <div class="products-grid" id="products-container">
+            <!-- Products will be dynamically inserted here -->
+        </div>
+
+        <!-- Contact Section -->
+        <section class="contact-section" id="contact">
+            <h3>Get in Touch with UniPro</h3>
+            <div class="contact-details">
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h4>Visit Our Store</h4>
+                    <p>UniPro Main Store<br>Business Campus</p>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <h4>Call / WhatsApp</h4>
+                    <p>+27 63 303 2394<br>Mon-Fri 9AM-6PM</p>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <h4>Social Media</h4>
+                    <p>siya61512@gmail.com<br>DM for inquiries</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo">
+                    <i class="fas fa-store"></i>
+                    <h1>Uni<span>Pro</span></h1>
+                </div>
+                
+                <p>Premium marketplace for quality clothing with detailed product views</p>
+                
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                </div>
+                
+                <div class="copyright">
+                    <p>&copy; 2024 UniPro Campus Marketplace. All rights reserved.</p>
+                    <p>University of KwaZulu-Natal Official Partner</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // South Africa Time and Date
+        function updateSATime() {
+            const now = new Date();
+            const options = { 
+                timeZone: 'Africa/Johannesburg',
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            const dateOptions = {
+                timeZone: 'Africa/Johannesburg',
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            };
+            
+            const time = now.toLocaleTimeString('en-ZA', options);
+            const date = now.toLocaleDateString('en-ZA', dateOptions);
+            
+            document.getElementById('sa-time').textContent = time;
+            document.getElementById('sa-date').textContent = date;
+        }
+        
+        // Update time immediately and then every second
+        updateSATime();
+        setInterval(updateSATime, 1000);
+        
+        // Sample Product Data with YOUR A images
+        const products = [
+            {
+                id: 1,
+                name: "Premium Running Sneakers",
+                category: "sneakers",
+                price: 1000.00,
+                gender: "unisex",
+                campus: "Main Campus",
+                status: "in-stock",
+                quantity: 15,
+                images: [
+                    "\n\n\nA1.png\n\n\n\n\n\n",
+                    "A2.png\n\n\n\n", 
+                    "A3.png\n\n\n\n", 
+                    "A4.png\n\n\n\n", 
+                    "A5.jpg"
+                ]
+            },
+            {
+                id: 2,
+                name: "Nike",
+                category: "sneakers",
+                price: 249.99,
+                gender: "men",
+                campus: "Business School",
+                status: "in-stock",
+                quantity: 42,
+                images: [
+                    "B1.png",
+                    "B2.png",
+                    "B3.png",
+                    "B4.jpg"
+                ]
+                
+            },
+            {
+                id: 3,
+                name: "Designer Denim Trousers",
+                category: "trousers",
+                price: 899.99,
+                gender: "women",
+                campus: "North Campus",
+                status: "low-stock",
+                quantity: 3,
+                images: [
+                    "\n\n\nT1.png\n\n\n\n\n\n",
+                    "T2.png\n\n\n\n", 
+                    "T3.png"
+                ]
+            },
+            {
+                id: 4,
+                name: "University Hoodie",
+                category: "hoodie",
+                price: 699.99,
+                gender: "unisex",
+                campus: "Main Campus",
+                status: "in-stock",
+                quantity: 28,
+                images: [
+                    "\n\n\nR1.jpg\n\n\n\n\n\n",
+                    "R2.png\n\n\n\n", 
+                    "R3.png\n\n\n\n"
+                ]
+            },
+            {
+                id: 5,
+                name: "Winter Jacket",
+                category: "jacket",
+                price: 1499.99,
+                gender: "men",
+                campus: "Business School",
+                status: "in-stock",
+                quantity: 12,
+                images: [
+                    "\n\n\nP1.png\n\n\n\n\n\n",
+                    "P2.jpg\n\n\n\n", 
+                    "P3.jpg\n\n\n\n", 
+                    "P4.jpg\n\n\n\n", 
+                    "P5.png"
+                ]
+            },
+            {
+                id: 6,
+                name: "Casual Summer Dress",
+                category: "tshirt",
+                price: 549.99,
+                gender: "women",
+                campus: "North Campus",
+                status: "out-of-stock",
+                quantity: 0,
+                images: [
+                    "\n\n\nS1.png\n\n\n\n\n\n",
+                    "S2.png\n\n\n\n", 
+                    "S3.png\n\n\n\n", 
+                    "S4.png\n\n\n\n", 
+                    "S5.jpg"
+                ]
+            },
+            {
+                id: 7,
+                name: "Sports Backpack",
+                category: "sneakers",
+                price: 399.99,
+                gender: "unisex",
+                campus: "Main Campus",
+                status: "in-stock",
+                quantity: 20,
+                images: [
+                    "\n\n\nO1.png\n\n\n\n\n\n",
+                    "O2.png\n\n\n\n", 
+                    "O3.png\n\n\n\n", 
+                    "O4.png\n\n\n\n", 
+                    "O5.jpg"
+                ]
+            },
+            {
+                id: 8,
+                name: "Formal Blazer",
+                category: "jacket",
+                price: 1199.99,
+                gender: "unisex",
+                campus: "Business School",
+                status: "in-stock",
+                quantity: 8,
+                images: [
+                    "\n\n\nN1.png\n\n\n\n\n\n",
+                    "N2.png\n\n\n\n", 
+                    "N3.png\n\n\n\n", 
+                    "N4.png\n\n\n\n", 
+                    "N5.jpg"
+                ]
+            }
+        ];
+        
+        // Shopping Cart
+        let cart = [];
+        let cartCount = 0;
+        
+        // Render Products
+        function renderProducts(filter = 'all') {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+            
+            const filteredProducts = filter === 'all' 
+                ? products 
+                : products.filter(product => product.category === filter);
+            
+            filteredProducts.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-slider">
+                        <div class="slider-container" id="slider-${product.id}">
+                            ${product.images.map((img, index) => `
+                                <div class="slide">
+                                    <img src="${img}" alt="${product.name} - View ${index + 1}" onerror="this.src='https://via.placeholder.com/300x220?text=Image+Not+Found'">
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="slide-number">
+                            <span class="current-slide">1</span>/<span class="total-slides">${product.images.length}</span>
+                        </div>
+                        <div class="slider-nav">
+                            <button class="slider-btn prev-slide" onclick="prevSlide(${product.id})">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="slider-btn next-slide" onclick="nextSlide(${product.id})">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-header">
+                            <span class="product-category">${product.category}</span>
+                            <span class="gender-badge gender-${product.gender}">
+                                ${product.gender.charAt(0).toUpperCase() + product.gender.slice(1)}
+                            </span>
+                        </div>
+                        <h3 class="product-title">${product.name}</h3>
+                        <div class="product-price">R ${product.price.toFixed(2)}</div>
+                        
+                        <div class="availability">
+                            <div class="status-dot status-${product.status}"></div>
+                            <span class="status-text">
+                                ${product.status === 'in-stock' ? 'In Stock' : 
+                                  product.status === 'low-stock' ? 'Low Stock' : 'Out of Stock'}
+                            </span>
+                        </div>
+                        
+                        <div class="quantity">
+                            Available: ${product.quantity} units
+                        </div>
+                        
+                        <div class="product-meta">
+                            <span><i class="far fa-clock"></i> Delivery: 2-3 days</span>
+                            <span class="campus-badge">${product.campus}</span>
+                        </div>
+                        
+                        <button class="btn-add-to-cart" onclick="addToCart(${product.id})" 
+                                ${product.status === 'out-of-stock' ? 'disabled' : ''}>
+                            ${product.status === 'out-of-stock' ? 'Out of Stock' : 'Add to Cart'}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(productCard);
+                
+                // Initialize slider for this product
+                initSlider(product.id, product.images.length);
+            });
+        }
+        
+        // Slider Functions
+        function initSlider(productId, totalSlides) {
+            const sliderContainer = document.getElementById(`slider-${productId}`);
+            let currentSlide = 0;
+            
+            // Store slide position in data attribute
+            sliderContainer.dataset.currentSlide = 0;
+        }
+        
+        function nextSlide(productId) {
+            const sliderContainer = document.getElementById(`slider-${productId}`);
+            const slides = sliderContainer.children;
+            let currentSlide = parseInt(sliderContainer.dataset.currentSlide);
+            
+            currentSlide = (currentSlide + 1) % slides.length;
+            sliderContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+            sliderContainer.dataset.currentSlide = currentSlide;
+            
+            // Update slide number display
+            const slideNumber = sliderContainer.closest('.product-slider').querySelector('.slide-number');
+            slideNumber.querySelector('.current-slide').textContent = currentSlide + 1;
+        }
+        
+        function prevSlide(productId) {
+            const sliderContainer = document.getElementById(`slider-${productId}`);
+            const slides = sliderContainer.children;
+            let currentSlide = parseInt(sliderContainer.dataset.currentSlide);
+            
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            sliderContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+            sliderContainer.dataset.currentSlide = currentSlide;
+            
+            // Update slide number display
+            const slideNumber = sliderContainer.closest('.product-slider').querySelector('.slide-number');
+            slideNumber.querySelector('.current-slide').textContent = currentSlide + 1;
+        }
+        
+        // Add to Cart Function
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            
+            if (product && product.quantity > 0) {
+                cart.push(product);
+                cartCount++;
+                document.querySelector('.cart-count').textContent = cartCount;
+                
+                // Update product quantity
+                product.quantity--;
+                
+                // Update UI
+                const productCard = document.querySelector(`#slider-${productId}`).closest('.product-card');
+                const quantityElement = productCard.querySelector('.quantity');
+                const statusElement = productCard.querySelector('.status-text');
+                const buttonElement = productCard.querySelector('.btn-add-to-cart');
+                
+                quantityElement.textContent = `Available: ${product.quantity} units`;
+                
+                if (product.quantity === 0) {
+                    product.status = 'out-of-stock';
+                    statusElement.textContent = 'Out of Stock';
+                    statusElement.previousElementSibling.className = 'status-dot status-out-of-stock';
+                    buttonElement.textContent = 'Out of Stock';
+                    buttonElement.disabled = true;
+                } else if (product.quantity <= 3) {
+                    product.status = 'low-stock';
+                    statusElement.textContent = 'Low Stock';
+                    statusElement.previousElementSibling.className = 'status-dot status-low-stock';
+                }
+                
+                // Show notification
+                alert(`${product.name} added to cart!`);
+            }
+        }
+        
+        // Filter Functionality
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                // Filter products
+                const filter = button.dataset.filter;
+                renderProducts(filter);
+            });
+        });
+        
+        // Smooth Scrolling for Navigation Links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                
+                window.scrollTo({
+                    top: targetSection.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+        });
+    </script>
+</body>
+</html>
