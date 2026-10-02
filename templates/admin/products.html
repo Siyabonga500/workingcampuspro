@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Items | UniPro Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+    <div class="admin-header">
+        <h2><i class="fas fa-box"></i> Items for sale</h2>
+        <a href="{{ url_for('admin_new_product') }}" class="btn btn-accent"><i class="fas fa-plus"></i> Add new item</a>
+    </div>
+
+    {% include "admin/_nav.html" %}
+
+    <div class="table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Gender</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Status</th>
+                    <th>Campus</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>
+                        {% if product.images %}
+                        <img class="table-thumb" src="{{ url_for('static', filename='uploads/' ~ product.images[0].filename) }}" alt="{{ product.name }}">
+                        {% else %}
+                        <div class="table-thumb" style="display:flex;align-items:center;justify-content:center;"><i class="far fa-image"></i></div>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ product.name }}</strong><br><small>{{ product.images|length }} photo(s)</small></td>
+                    <td>{{ product.category_label }}</td>
+                    <td>{{ product.gender_label }}</td>
+                    <td>R {{ '%.2f'|format(product.price) }}</td>
+                    <td>{{ product.quantity }}</td>
+                    <td><span class="status-pill"><span class="status-dot status-{{ product.status }}"></span>{{ product.status_label }}</span></td>
+                    <td>{{ product.campus }}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="{{ url_for('admin_edit_product', product_id=product.id) }}" class="btn btn-outline btn-sm"><i class="fas fa-pen"></i> Edit</a>
+                            <form method="post" action="{{ url_for('admin_delete_product', product_id=product.id) }}" onsubmit='return confirm({{ ("Delete " ~ product.name ~ "? This cannot be undone.")|tojson }});'>
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9" style="text-align:center;padding:30px;">No items yet. <a href="{{ url_for('admin_new_product') }}">Add the first one</a>.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -819,7 +819,8 @@ footer {
 
 /* Forms */
 .form-page {
-    padding: 40px 0 60px;
+    padding-top: 40px;
+    padding-bottom: 60px;
 }
 
 .form-card {
@@ -918,7 +919,8 @@ footer {
 
 /* Admin */
 .admin-page {
-    padding: 30px 0 60px;
+    padding-top: 30px;
+    padding-bottom: 60px;
 }
 
 .admin-header {
@@ -1107,4 +1109,428 @@ footer {
 
 footer .logo h1 {
     color: white;
+}
+
+/* Keep "Add to Cart" anchor targets clear of the sticky header */
+.product-card {
+    scroll-margin-top: 130px;
+}
+
+.cart-icon {
+    text-decoration: none;
+}
+
+.account-links a.greeting {
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.account-links a.greeting:hover {
+    color: var(--accent);
+}
+
+.muted {
+    color: var(--gray);
+}
+
+/* Dashboards */
+.stat-card .sub {
+    font-size: 13px;
+    color: var(--gray);
+}
+
+.stat-card .label i {
+    margin-right: 4px;
+}
+
+a.stat-link {
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+a.stat-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+}
+
+.dash-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.dash-grid.three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dash-grid.wide-left {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    align-items: start;
+}
+
+.panel {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.panel .table-wrap {
+    box-shadow: none;
+    border: 1px solid #eef0f2;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.panel-header h3 {
+    font-size: 17px;
+}
+
+.panel-header a {
+    font-size: 14px;
+    color: var(--campus-blue);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.panel-empty {
+    color: var(--gray);
+    padding: 10px 0;
+}
+
+.panel-empty a {
+    color: var(--campus-blue);
+}
+
+.table-empty {
+    text-align: center;
+    padding: 30px !important;
+    color: var(--gray);
+}
+
+/* Horizontal bar list: one hue, values in text colour */
+.bar-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bar-list li {
+    display: grid;
+    grid-template-columns: minmax(110px, 38%) 1fr auto;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    padding: 2px 0;
+}
+
+.bar-label {
+    color: var(--dark);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+a.bar-label:hover {
+    color: var(--campus-blue);
+}
+
+.bar-track {
+    height: 10px;
+    background-color: #eef2f6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    display: block;
+    height: 100%;
+    min-width: 2px;
+    background-color: var(--campus-blue);
+    border-radius: 0 4px 4px 0;
+}
+
+.bar-list li:hover .bar-fill {
+    background-color: #2378b5;
+}
+
+.bar-value {
+    font-weight: 600;
+    min-width: 40px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.simple-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.simple-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eef0f2;
+    font-size: 14px;
+}
+
+.simple-list li:last-child {
+    border-bottom: none;
+}
+
+.simple-list a {
+    color: var(--dark);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.simple-list a:hover {
+    color: var(--campus-blue);
+}
+
+.simple-list.numbered {
+    counter-reset: rank;
+}
+
+.simple-list.numbered li span:first-child::before {
+    counter-increment: rank;
+    content: counter(rank) ".";
+    display: inline-block;
+    width: 22px;
+    color: var(--gray);
+    font-weight: 600;
+}
+
+/* Order status badges (icon + label, never colour alone) */
+.order-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    vertical-align: middle;
+    color: var(--dark);
+}
+
+.order-status-pending { background-color: #fff3cd; }
+.order-status-pending i { color: #b58100; }
+.order-status-confirmed { background-color: #e1effa; }
+.order-status-confirmed i { color: #1d6fa5; }
+.order-status-ready { background-color: #ffe6de; }
+.order-status-ready i { color: #c4502f; }
+.order-status-completed { background-color: #e3f4e8; }
+.order-status-completed i { color: #1c7c34; }
+.order-status-cancelled { background-color: #eceef0; color: var(--gray); }
+
+.details {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 8px 16px;
+    font-size: 14px;
+}
+
+.details dt {
+    color: var(--gray);
+    font-weight: 600;
+}
+
+.details dd {
+    word-break: break-word;
+}
+
+.details a {
+    color: var(--campus-blue);
+}
+
+.details.two-col {
+    grid-template-columns: max-content 1fr max-content 1fr;
+}
+
+.item-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-form {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #eef0f2;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.status-form label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.status-form-row {
+    display: flex;
+    gap: 8px;
+}
+
+.status-form select,
+.qty-form input {
+    padding: 8px 10px;
+    border: 1px solid #ccd3da;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.status-form select {
+    flex: 1;
+}
+
+.hint {
+    font-size: 12px;
+    color: var(--gray);
+}
+
+.qty-form {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.qty-form input {
+    width: 64px;
+}
+
+.cart-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 18px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #eef0f2;
+}
+
+.cart-total strong {
+    font-size: 24px;
+    color: var(--accent);
+}
+
+/* Customer order tracking */
+.tracking-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+}
+
+.tracking-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #eef0f2;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.tracking-card:hover {
+    border-color: var(--campus-blue);
+}
+
+.tracking-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tracker {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    font-size: 12px;
+    text-align: center;
+    color: var(--gray);
+}
+
+.tracker li {
+    position: relative;
+    padding-top: 20px;
+}
+
+.tracker li::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    border-radius: 50%;
+    background-color: #dfe4e9;
+    z-index: 1;
+}
+
+.tracker li::after {
+    content: '';
+    position: absolute;
+    top: 9px;
+    left: -50%;
+    width: 100%;
+    height: 2px;
+    background-color: #dfe4e9;
+}
+
+.tracker li:first-child::after {
+    display: none;
+}
+
+.tracker li.done,
+.tracker li.current {
+    color: var(--dark);
+    font-weight: 600;
+}
+
+.tracker li.done::before,
+.tracker li.done::after,
+.tracker li.current::after {
+    background-color: var(--campus-green);
+}
+
+.tracker li.current::before {
+    background-color: white;
+    border: 3px solid var(--campus-green);
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
+    top: 3px;
+}
+
+@media (max-width: 900px) {
+    .dash-grid,
+    .dash-grid.three,
+    .dash-grid.wide-left {
+        grid-template-columns: 1fr;
+    }
+
+    .details.two-col {
+        grid-template-columns: max-content 1fr;
+    }
 }

@@ -1,70 +1,137 @@
 {% extends "base.html" %}
 
-{% block title %}Admin | UniPro Marketplace{% endblock %}
+{% block title %}Admin Dashboard | UniPro Marketplace{% endblock %}
 
 {% block content %}
 <div class="container admin-page">
     <div class="admin-header">
-        <h2><i class="fas fa-tools"></i> Admin dashboard</h2>
+        <div>
+            <h2><i class="fas fa-chart-line"></i> Admin dashboard</h2>
+            <p class="muted">Welcome back, {{ current_user.name }}. Here's how the shop is doing.</p>
+        </div>
         <a href="{{ url_for('admin_new_product') }}" class="btn btn-accent"><i class="fas fa-plus"></i> Add new item</a>
     </div>
 
     {% include "admin/_nav.html" %}
 
     <div class="stats-grid">
-        <div class="stat-card"><div class="label">Items listed</div><div class="value">{{ stats.products }}</div></div>
-        <div class="stat-card"><div class="label">Units in stock</div><div class="value">{{ stats.units }}</div></div>
-        <div class="stat-card"><div class="label">Out of stock</div><div class="value">{{ stats.out_of_stock }}</div></div>
-        <div class="stat-card"><div class="label">Registered users</div><div class="value">{{ stats.users }}</div></div>
+        <div class="stat-card">
+            <div class="label"><i class="fas fa-coins"></i> Revenue</div>
+            <div class="value">R {{ '{:,.2f}'.format(stats.revenue|float) }}</div>
+            <div class="sub">Excludes cancelled orders</div>
+        </div>
+        <a class="stat-card stat-link" href="{{ url_for('admin_orders', status='open') }}">
+            <div class="label"><i class="fas fa-receipt"></i> Open orders</div>
+            <div class="value">{{ stats.open_orders }}</div>
+            <div class="sub">{{ stats.orders }} orders in total</div>
+        </a>
+        <a class="stat-card stat-link" href="{{ url_for('admin_users') }}">
+            <div class="label"><i class="fas fa-users"></i> Customers</div>
+            <div class="value">{{ stats.customers }}</div>
+            <div class="sub">Registered accounts</div>
+        </a>
+        <a class="stat-card stat-link" href="{{ url_for('admin_products') }}">
+            <div class="label"><i class="fas fa-box"></i> Items listed</div>
+            <div class="value">{{ stats.products }}</div>
+            <div class="sub">{{ stats.low_stock }} low or out of stock</div>
+        </a>
     </div>
 
-    <div class="table-wrap">
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Photo</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Gender</th>
-                    <th>Price</th>
-                    <th>Qty</th>
-                    <th>Status</th>
-                    <th>Campus</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for product in products %}
-                <tr>
-                    <td>
-                        {% if product.images %}
-                        <img class="table-thumb" src="{{ url_for('static', filename='uploads/' ~ product.images[0].filename) }}" alt="{{ product.name }}">
-                        {% else %}
-                        <div class="table-thumb" style="display:flex;align-items:center;justify-content:center;"><i class="far fa-image"></i></div>
-                        {% endif %}
-                    </td>
-                    <td><strong>{{ product.name }}</strong><br><small>{{ product.images|length }} photo(s)</small></td>
-                    <td>{{ product.category_label }}</td>
-                    <td>{{ product.gender_label }}</td>
-                    <td>R {{ '%.2f'|format(product.price) }}</td>
-                    <td>{{ product.quantity }}</td>
-                    <td><span class="status-pill"><span class="status-dot status-{{ product.status }}"></span>{{ product.status_label }}</span></td>
-                    <td>{{ product.campus }}</td>
-                    <td>
-                        <div class="table-actions">
-                            <a href="{{ url_for('admin_edit_product', product_id=product.id) }}" class="btn btn-outline btn-sm"><i class="fas fa-pen"></i> Edit</a>
-                            <form method="post" action="{{ url_for('admin_delete_product', product_id=product.id) }}" onsubmit='return confirm({{ ("Delete " ~ product.name ~ "? This cannot be undone.")|tojson }});'>
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% else %}
-                <tr><td colspan="9" style="text-align:center;padding:30px;">No items yet. <a href="{{ url_for('admin_new_product') }}">Add the first one</a>.</td></tr>
+    <div class="dash-grid">
+        <section class="panel">
+            <div class="panel-header">
+                <h3>Orders by status</h3>
+                <a href="{{ url_for('admin_orders') }}">All orders</a>
+            </div>
+            <ul class="bar-list">
+                {% for key, label, count in orders_by_status %}
+                <li title="{{ label }}: {{ count }} order{{ '' if count == 1 else 's' }}">
+                    <a href="{{ url_for('admin_orders', status=key) }}" class="bar-label">{{ label }}</a>
+                    <span class="bar-track"><span class="bar-fill" style="width: {{ (count / max_status * 100)|round(1) }}%"></span></span>
+                    <span class="bar-value">{{ count }}</span>
+                </li>
                 {% endfor %}
-            </tbody>
-        </table>
+            </ul>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h3>Sales by collection campus</h3>
+            </div>
+            {% if sales_by_campus %}
+            <ul class="bar-list">
+                {% for campus, total, count in sales_by_campus %}
+                <li title="{{ campus }}: R {{ '%.2f'|format(total) }} from {{ count }} order{{ '' if count == 1 else 's' }}">
+                    <span class="bar-label">{{ campus }}</span>
+                    <span class="bar-track"><span class="bar-fill" style="width: {{ (total|float / max_campus * 100)|round(1) }}%"></span></span>
+                    <span class="bar-value">R {{ '{:,.0f}'.format(total|float) }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="panel-empty">No sales yet.</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Recent orders</h3>
+            <a href="{{ url_for('admin_orders') }}">View all</a>
+        </div>
+        {% with orders=recent_orders, detail_endpoint='admin_order', show_customer=True %}
+        {% include "_orders_table.html" %}
+        {% endwith %}
+    </section>
+
+    <div class="dash-grid three">
+        <section class="panel">
+            <div class="panel-header">
+                <h3>Stock alerts</h3>
+                <a href="{{ url_for('admin_products') }}">Manage items</a>
+            </div>
+            {% if low_stock %}
+            <ul class="simple-list">
+                {% for product in low_stock %}
+                <li>
+                    <a href="{{ url_for('admin_edit_product', product_id=product.id) }}">{{ product.name }}</a>
+                    <span class="status-pill"><span class="status-dot status-{{ product.status }}"></span>{{ product.quantity }} left</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="panel-empty"><i class="fas fa-check-circle"></i> All items are well stocked.</p>
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <div class="panel-header"><h3>Best sellers</h3></div>
+            {% if top_products %}
+            <ol class="simple-list numbered">
+                {% for name, quantity in top_products %}
+                <li><span>{{ name }}</span><span class="muted">{{ quantity }} sold</span></li>
+                {% endfor %}
+            </ol>
+            {% else %}
+            <p class="panel-empty">No sales yet.</p>
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h3>New customers</h3>
+                <a href="{{ url_for('admin_users') }}">View all</a>
+            </div>
+            {% if new_customers %}
+            <ul class="simple-list">
+                {% for user in new_customers %}
+                <li><span>{{ user.full_name }}<br><small class="muted">{{ user.campus }}</small></span><span class="muted">{{ user.created_at.strftime('%d %b') }}</span></li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="panel-empty">No customers yet.</p>
+            {% endif %}
+        </section>
     </div>
 </div>
 {% endblock %}

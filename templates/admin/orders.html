@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Orders | UniPro Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+    <div class="admin-header">
+        <h2><i class="fas fa-receipt"></i> Orders</h2>
+    </div>
+
+    {% include "admin/_nav.html" %}
+
+    <div class="filter-options" style="margin-bottom: 16px;">
+        <a class="filter-btn{% if not status %} active{% endif %}" href="{{ url_for('admin_orders') }}">All</a>
+        <a class="filter-btn{% if status == 'open' %} active{% endif %}" href="{{ url_for('admin_orders', status='open') }}">Open</a>
+        {% for key, label in statuses.items() %}
+        <a class="filter-btn{% if status == key %} active{% endif %}" href="{{ url_for('admin_orders', status=key) }}">{{ label }}</a>
+        {% endfor %}
+    </div>
+
+    {% with detail_endpoint='admin_order', show_customer=True %}
+    {% include "_orders_table.html" %}
+    {% endwith %}
+</div>
+{% endblock %}

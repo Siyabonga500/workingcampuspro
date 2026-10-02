@@ -103,3 +103,60 @@ class ProductImage(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
     filename = db.Column(db.String(255), nullable=False)
     position = db.Column(db.Integer, nullable=False, default=0)
+
+
+ORDER_STATUSES = {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "ready": "Ready for collection",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+}
+
+OPEN_ORDER_STATUSES = ("pending", "confirmed", "ready")
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    status = db.Column(db.String(20), nullable=False, default="pending", index=True)
+    collection_campus = db.Column(db.String(80), nullable=False)
+    notes = db.Column(db.Text, default="")
+    total = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+    user = db.relationship("User", backref=db.backref("orders", lazy="dynamic"))
+    items = db.relationship("OrderItem", backref="order", cascade="all, delete-orphan")
+
+    @property
+    def reference(self):
+        return f"UP{self.id:05d}"
+
+    @property
+    def status_label(self):
+        return ORDER_STATUSES.get(self.status, self.status.title())
+
+    @property
+    def item_count(self):
+        return sum(item.quantity for item in self.items)
+
+    @property
+    def can_cancel(self):
+        return self.status == "pending"
+
+
+class OrderItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey("order.id"), nullable=False)
+    # Kept nullable so orders survive when an admin deletes the product.
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=True)
+    product_name = db.Column(db.String(120), nullable=False)
+    unit_price = db.Column(db.Numeric(10, 2), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    product = db.relationship("Product")
+
+    @property
+    def line_total(self):
+        return self.unit_price * self.quantity

@@ -100,36 +100,6 @@ filterButtons.forEach(button => {
     });
 });
 
-// Cart (client-side counter)
-let cartCount = 0;
-document.querySelectorAll('.btn-add-to-cart').forEach(button => {
-    button.addEventListener('click', () => {
-        const card = button.closest('.product-card');
-        let quantity = Number(card.dataset.quantity);
-        if (quantity <= 0) return;
-
-        quantity--;
-        card.dataset.quantity = quantity;
-        cartCount++;
-        document.querySelector('.cart-count').textContent = cartCount;
-        card.querySelector('.quantity').textContent = `Available: ${quantity} units`;
-
-        const statusText = card.querySelector('.status-text');
-        const statusDot = card.querySelector('.status-dot');
-        if (quantity === 0) {
-            statusText.textContent = 'Out of Stock';
-            statusDot.className = 'status-dot status-out-of-stock';
-            button.textContent = 'Out of Stock';
-            button.disabled = true;
-        } else if (quantity <= 3) {
-            statusText.textContent = 'Low Stock';
-            statusDot.className = 'status-dot status-low-stock';
-        }
-
-        alert(`${button.dataset.name} added to cart!`);
-    });
-});
-
 // Smooth scrolling for same-page navigation links
 document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', function (e) {

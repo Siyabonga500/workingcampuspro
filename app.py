@@ -26,12 +26,18 @@ from flask_login import (
     logout_user,
 )
 from PIL import Image, ImageOps, UnidentifiedImageError
+from sqlalchemy import func
 
 from models import (
     CATEGORIES,
     DUT_CAMPUSES,
     GENDERS,
+    LOW_STOCK_THRESHOLD,
+    OPEN_ORDER_STATUSES,
+    ORDER_STATUSES,
     PRODUCT_GENDERS,
+    Order,
+    OrderItem,
     Product,
     ProductImage,
     User,
@@ -103,6 +109,7 @@ def inject_globals():
         "csrf_token": csrf_token,
         "DUT_CAMPUSES": DUT_CAMPUSES,
         "CATEGORIES": CATEGORIES,
+        "cart_count": sum(get_cart().values()),
     }
 
 
@@ -124,7 +131,73 @@ def is_safe_next(target):
     if not target:
         return False
     parsed = urlparse(target)
-    return not parsed.scheme and not parsed.netloc and target.startswith("/")
+    return (
+        not parsed.scheme
+        and not parsed.netloc
+        and target.startswith("/")
+        and not target.startswith(("//", "/\\"))
+    )
+
+def validate_profile_form(form):
+    """Validate the personal details shared by sign-up and profile editing."""
+    errors = []
+    data = {
+        "name": form.get("name", "").strip(),
+        "surname": form.get("surname", "").strip(),
+        "gender": form.get("gender", ""),
+        "phone": re.sub(r"[\s\-()]", "", form.get("phone", "")),
+        "residence_address": form.get("residence_address", "").strip(),
+        "campus": form.get("campus", ""),
+    }
+    if not data["name"]:
+        errors.append("Name is required.")
+    if not data["surname"]:
+        errors.append("Surname is required.")
+    if data["gender"] not in GENDERS:
+        errors.append("Select your gender.")
+    if not PHONE_RE.match(data["phone"]):
+        errors.append("Enter a valid South African phone number, e.g. 0631234567 or +27631234567.")
+    if not data["residence_address"]:
+        errors.append("Residence address is required.")
+    if data["campus"] not in DUT_CAMPUSES:
+        errors.append("Select your DUT campus.")
+    return data, errors
+
+
+def validate_new_password(password, confirm):
+    if len(password) < MIN_PASSWORD_LENGTH:
+        return [f"Password must be at least {MIN_PASSWORD_LENGTH} characters."]
+    if password != confirm:
+        return ["Passwords do not match."]
+    return []
+
+
+# --- Cart (stored in the session as {product_id: quantity}) ---------------
+
+
+def get_cart():
+    cart = session.get("cart", {})
+    return cart if isinstance(cart, dict) else {}
+
+
+def save_cart(cart):
+    session["cart"] = {k: v for k, v in cart.items() if v > 0}
+
+
+def cart_lines():
+    """Return (lines, total) for the current cart, dropping removed products."""
+    cart = get_cart()
+    lines = []
+    total = Decimal("0.00")
+    if cart:
+        products = Product.query.filter(Product.id.in_([int(pid) for pid in cart])).all()
+        for product in products:
+            quantity = cart[str(product.id)]
+            line_total = product.price * quantity
+            total += line_total
+            lines.append({"product": product, "quantity": quantity, "line_total": line_total})
+    return lines, total
+
 
 
 def save_image(source):
@@ -220,51 +293,20 @@ def register():
 
     form = request.form
     if request.method == "POST":
-        errors = []
+        data, errors = validate_profile_form(form)
         email = form.get("email", "").strip().lower()
-        name = form.get("name", "").strip()
-        surname = form.get("surname", "").strip()
-        gender = form.get("gender", "")
-        phone = re.sub(r"[\s\-()]", "", form.get("phone", ""))
-        address = form.get("residence_address", "").strip()
-        campus = form.get("campus", "")
         password = form.get("password", "")
-        confirm = form.get("confirm_password", "")
-
         if not EMAIL_RE.match(email):
-            errors.append("Enter a valid email address.")
+            errors.insert(0, "Enter a valid email address.")
         elif User.query.filter_by(email=email).first():
-            errors.append("An account with that email already exists.")
-        if not name:
-            errors.append("Name is required.")
-        if not surname:
-            errors.append("Surname is required.")
-        if gender not in GENDERS:
-            errors.append("Select your gender.")
-        if not PHONE_RE.match(phone):
-            errors.append("Enter a valid South African phone number, e.g. 0631234567 or +27631234567.")
-        if not address:
-            errors.append("Residence address is required.")
-        if campus not in DUT_CAMPUSES:
-            errors.append("Select your DUT campus.")
-        if len(password) < MIN_PASSWORD_LENGTH:
-            errors.append(f"Password must be at least {MIN_PASSWORD_LENGTH} characters.")
-        elif password != confirm:
-            errors.append("Passwords do not match.")
+            errors.insert(0, "An account with that email already exists.")
+        errors += validate_new_password(password, form.get("confirm_password", ""))
 
         if errors:
             for error in errors:
                 flash(error, "error")
         else:
-            user = User(
-                email=email,
-                name=name,
-                surname=surname,
-                gender=gender,
-                phone=phone,
-                residence_address=address,
-                campus=campus,
-            )
+            user = User(email=email, **data)
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
@@ -290,7 +332,7 @@ def login():
             next_url = request.args.get("next")
             if is_safe_next(next_url):
                 return redirect(next_url)
-            return redirect(url_for("admin_dashboard" if user.is_admin else "index"))
+            return redirect(url_for("admin_dashboard" if user.is_admin else "account_dashboard"))
         flash("Incorrect email or password.", "error")
 
     return render_template("login.html", form=request.form)
@@ -304,20 +346,261 @@ def logout():
     return redirect(url_for("index"))
 
 
+# --- Cart & checkout -------------------------------------------------------
+
+
+@app.route("/cart")
+def cart():
+    lines, total = cart_lines()
+    default_campus = current_user.campus if current_user.is_authenticated else ""
+    return render_template("cart.html", lines=lines, total=total, default_campus=default_campus)
+
+
+@app.route("/cart/add/<int:product_id>", methods=["POST"])
+def cart_add(product_id):
+    product = db.get_or_404(Product, product_id)
+    cart = get_cart()
+    key = str(product.id)
+    if cart.get(key, 0) + 1 > product.quantity:
+        flash(f"Sorry, there are no more “{product.name}” in stock.", "error")
+    else:
+        cart[key] = cart.get(key, 0) + 1
+        save_cart(cart)
+        flash(f"“{product.name}” added to your cart.", "success")
+    return redirect(url_for("index", _anchor=f"product-{product.id}"))
+
+
+@app.route("/cart/update/<int:product_id>", methods=["POST"])
+def cart_update(product_id):
+    cart = get_cart()
+    key = str(product_id)
+    product = db.session.get(Product, product_id)
+    try:
+        quantity = int(request.form.get("quantity", 0))
+    except ValueError:
+        quantity = 0
+    if product is None or quantity <= 0:
+        cart.pop(key, None)
+    else:
+        if quantity > product.quantity:
+            flash(f"Only {product.quantity} “{product.name}” in stock.", "error")
+            quantity = product.quantity
+        cart[key] = quantity
+    save_cart(cart)
+    return redirect(url_for("cart"))
+
+
+@app.route("/checkout", methods=["POST"])
+@login_required
+def checkout():
+    lines, total = cart_lines()
+    if not lines:
+        flash("Your cart is empty.", "error")
+        return redirect(url_for("cart"))
+
+    campus = request.form.get("collection_campus", "")
+    if campus not in DUT_CAMPUSES:
+        flash("Choose the campus where you will collect your order.", "error")
+        return redirect(url_for("cart"))
+
+    for line in lines:
+        if line["quantity"] > line["product"].quantity:
+            flash(
+                f"Only {line['product'].quantity} “{line['product'].name}” left. "
+                "Please update your cart.",
+                "error",
+            )
+            return redirect(url_for("cart"))
+
+    order = Order(
+        user=current_user,
+        collection_campus=campus,
+        notes=request.form.get("notes", "").strip()[:500],
+        total=total,
+    )
+    for line in lines:
+        product = line["product"]
+        product.quantity -= line["quantity"]
+        order.items.append(
+            OrderItem(
+                product=product,
+                product_name=product.name,
+                unit_price=product.price,
+                quantity=line["quantity"],
+            )
+        )
+    db.session.add(order)
+    db.session.commit()
+    save_cart({})
+    flash(f"Order {order.reference} placed! We'll let you know when it's ready.", "success")
+    return redirect(url_for("account_order", order_id=order.id))
+
+
+def restock(order):
+    for item in order.items:
+        if item.product is not None:
+            item.product.quantity += item.quantity
+
+
+# --- Customer dashboard ----------------------------------------------------
+
+
+@app.route("/account/")
+@login_required
+def account_dashboard():
+    orders = current_user.orders.order_by(Order.created_at.desc()).all()
+    active = [o for o in orders if o.status in OPEN_ORDER_STATUSES]
+    stats = {
+        "orders": len(orders),
+        "active": len(active),
+        "spent": sum((o.total for o in orders if o.status != "cancelled"), Decimal("0.00")),
+        "cart": sum(get_cart().values()),
+    }
+    return render_template(
+        "account/dashboard.html",
+        stats=stats,
+        active_orders=active,
+        recent_orders=orders[:5],
+    )
+
+
+@app.route("/account/orders")
+@login_required
+def account_orders():
+    orders = current_user.orders.order_by(Order.created_at.desc()).all()
+    return render_template("account/orders.html", orders=orders)
+
+
+@app.route("/account/orders/<int:order_id>")
+@login_required
+def account_order(order_id):
+    order = db.get_or_404(Order, order_id)
+    if order.user_id != current_user.id:
+        abort(404)
+    return render_template("account/order_detail.html", order=order)
+
+
+@app.route("/account/orders/<int:order_id>/cancel", methods=["POST"])
+@login_required
+def account_cancel_order(order_id):
+    order = db.get_or_404(Order, order_id)
+    if order.user_id != current_user.id:
+        abort(404)
+    if not order.can_cancel:
+        flash("This order can no longer be cancelled. Please contact us.", "error")
+    else:
+        order.status = "cancelled"
+        restock(order)
+        db.session.commit()
+        flash(f"Order {order.reference} was cancelled.", "success")
+    return redirect(url_for("account_order", order_id=order.id))
+
+
+@app.route("/account/profile", methods=["GET", "POST"])
+@login_required
+def account_profile():
+    if request.method == "POST":
+        data, errors = validate_profile_form(request.form)
+        if errors:
+            for error in errors:
+                flash(error, "error")
+            return render_template("account/profile.html", form=request.form, genders=GENDERS)
+        for key, value in data.items():
+            setattr(current_user, key, value)
+        db.session.commit()
+        flash("Your profile was updated.", "success")
+        return redirect(url_for("account_profile"))
+
+    form = {
+        "name": current_user.name,
+        "surname": current_user.surname,
+        "gender": current_user.gender,
+        "phone": current_user.phone,
+        "residence_address": current_user.residence_address,
+        "campus": current_user.campus,
+    }
+    return render_template("account/profile.html", form=form, genders=GENDERS)
+
+
+@app.route("/account/password", methods=["POST"])
+@login_required
+def account_password():
+    if not current_user.check_password(request.form.get("current_password", "")):
+        flash("Your current password is incorrect.", "error")
+    else:
+        password = request.form.get("new_password", "")
+        errors = validate_new_password(password, request.form.get("confirm_password", ""))
+        if errors:
+            for error in errors:
+                flash(error, "error")
+        else:
+            current_user.set_password(password)
+            db.session.commit()
+            flash("Your password was changed.", "success")
+    return redirect(url_for("account_profile"))
+
+
 # --- Admin routes ----------------------------------------------------------
 
 
 @app.route("/admin/")
 @admin_required
 def admin_dashboard():
-    products = Product.query.order_by(Product.created_at.desc()).all()
+    sold = Order.status != "cancelled"
+    status_counts = dict(
+        db.session.query(Order.status, func.count(Order.id)).group_by(Order.status).all()
+    )
     stats = {
-        "products": len(products),
-        "units": sum(p.quantity for p in products),
-        "out_of_stock": sum(1 for p in products if p.status == "out-of-stock"),
-        "users": User.query.count(),
+        "revenue": db.session.query(func.coalesce(func.sum(Order.total), 0)).filter(sold).scalar(),
+        "orders": sum(status_counts.values()),
+        "open_orders": sum(status_counts.get(s, 0) for s in OPEN_ORDER_STATUSES),
+        "customers": User.query.filter_by(is_admin=False).count(),
+        "products": Product.query.count(),
+        "low_stock": Product.query.filter(Product.quantity <= LOW_STOCK_THRESHOLD).count(),
     }
-    return render_template("admin/dashboard.html", products=products, stats=stats)
+    orders_by_status = [
+        (key, label, status_counts.get(key, 0)) for key, label in ORDER_STATUSES.items()
+    ]
+    sales_by_campus = (
+        db.session.query(Order.collection_campus, func.sum(Order.total), func.count(Order.id))
+        .filter(sold)
+        .group_by(Order.collection_campus)
+        .order_by(func.sum(Order.total).desc())
+        .all()
+    )
+    top_products = (
+        db.session.query(OrderItem.product_name, func.sum(OrderItem.quantity))
+        .join(Order)
+        .filter(sold)
+        .group_by(OrderItem.product_name)
+        .order_by(func.sum(OrderItem.quantity).desc())
+        .limit(5)
+        .all()
+    )
+    return render_template(
+        "admin/dashboard.html",
+        stats=stats,
+        orders_by_status=orders_by_status,
+        max_status=max([c for _, _, c in orders_by_status] + [1]),
+        sales_by_campus=sales_by_campus,
+        max_campus=max([float(t) for _, t, _ in sales_by_campus] + [1]),
+        top_products=top_products,
+        recent_orders=Order.query.order_by(Order.created_at.desc()).limit(6).all(),
+        low_stock=Product.query.filter(Product.quantity <= LOW_STOCK_THRESHOLD)
+        .order_by(Product.quantity)
+        .all(),
+        new_customers=User.query.filter_by(is_admin=False)
+        .order_by(User.created_at.desc())
+        .limit(5)
+        .all(),
+    )
+
+
+@app.route("/admin/products")
+@admin_required
+def admin_products():
+    products = Product.query.order_by(Product.created_at.desc()).all()
+    return render_template("admin/products.html", products=products)
 
 
 @app.route("/admin/products/new", methods=["GET", "POST"])
@@ -334,7 +617,7 @@ def admin_new_product():
             for error in errors:
                 flash(error, "error")
             flash(f"“{product.name}” was added.", "success")
-            return redirect(url_for("admin_dashboard"))
+            return redirect(url_for("admin_products"))
         for error in errors:
             flash(error, "error")
     return render_template(
@@ -380,12 +663,14 @@ def admin_edit_product(product_id):
 def admin_delete_product(product_id):
     product = db.get_or_404(Product, product_id)
     filenames = [image.filename for image in product.images]
+    # Keep past orders intact: they store the product name and price.
+    OrderItem.query.filter_by(product_id=product.id).update({"product_id": None})
     db.session.delete(product)
     db.session.commit()
     for filename in filenames:
         delete_image_file(filename)
     flash(f"“{product.name}” was deleted.", "success")
-    return redirect(url_for("admin_dashboard"))
+    return redirect(url_for("admin_products"))
 
 
 @app.route("/admin/images/<int:image_id>/delete", methods=["POST"])
@@ -401,11 +686,48 @@ def admin_delete_image(image_id):
     return redirect(url_for("admin_edit_product", product_id=product_id))
 
 
+@app.route("/admin/orders")
+@admin_required
+def admin_orders():
+    status = request.args.get("status", "")
+    query = Order.query.order_by(Order.created_at.desc())
+    if status in ORDER_STATUSES:
+        query = query.filter_by(status=status)
+    elif status == "open":
+        query = query.filter(Order.status.in_(OPEN_ORDER_STATUSES))
+    return render_template(
+        "admin/orders.html", orders=query.all(), status=status, statuses=ORDER_STATUSES
+    )
+
+
+@app.route("/admin/orders/<int:order_id>", methods=["GET", "POST"])
+@admin_required
+def admin_order(order_id):
+    order = db.get_or_404(Order, order_id)
+    if request.method == "POST":
+        new_status = request.form.get("status", "")
+        if new_status not in ORDER_STATUSES:
+            flash("Choose a valid status.", "error")
+        elif order.status == "cancelled":
+            flash("Cancelled orders cannot be reopened.", "error")
+        elif new_status != order.status:
+            if new_status == "cancelled":
+                restock(order)
+            order.status = new_status
+            db.session.commit()
+            flash(f"Order {order.reference} is now “{order.status_label}”.", "success")
+        return redirect(url_for("admin_order", order_id=order.id))
+    return render_template("admin/order_detail.html", order=order, statuses=ORDER_STATUSES)
+
+
 @app.route("/admin/users")
 @admin_required
 def admin_users():
     users = User.query.order_by(User.created_at.desc()).all()
-    return render_template("admin/users.html", users=users)
+    order_counts = dict(
+        db.session.query(Order.user_id, func.count(Order.id)).group_by(Order.user_id).all()
+    )
+    return render_template("admin/users.html", users=users, order_counts=order_counts)
 
 
 @app.route("/admin/users/<int:user_id>/toggle-admin", methods=["POST"])

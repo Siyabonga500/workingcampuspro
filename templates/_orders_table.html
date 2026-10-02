@@ -1,0 +1,33 @@
+{# Expects: orders, detail_endpoint, show_customer (bool) #}
+<div class="table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Date</th>
+                {% if show_customer %}<th>Customer</th>{% endif %}
+                <th>Items</th>
+                <th>Total</th>
+                <th>Collect at</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td><strong>{{ order.reference }}</strong></td>
+                <td>{{ order.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+                {% if show_customer %}<td>{{ order.user.full_name }}<br><small>{{ order.user.phone }}</small></td>{% endif %}
+                <td>{{ order.item_count }}</td>
+                <td>R {{ '%.2f'|format(order.total) }}</td>
+                <td>{{ order.collection_campus }}</td>
+                <td>{% include "_order_status.html" %}</td>
+                <td><a href="{{ url_for(detail_endpoint, order_id=order.id) }}" class="btn btn-outline btn-sm">View</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="{{ 8 if show_customer else 7 }}" class="table-empty">No orders yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

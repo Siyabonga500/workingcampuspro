@@ -1,0 +1,6 @@
+<div class="admin-tabs">
+    <a href="{{ url_for('account_dashboard') }}" class="{{ 'active' if request.endpoint == 'account_dashboard' }}"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="{{ url_for('account_orders') }}" class="{{ 'active' if request.endpoint in ('account_orders', 'account_order') }}"><i class="fas fa-receipt"></i> My orders</a>
+    <a href="{{ url_for('cart') }}" class="{{ 'active' if request.endpoint == 'cart' }}"><i class="fas fa-shopping-bag"></i> Cart{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+    <a href="{{ url_for('account_profile') }}" class="{{ 'active' if request.endpoint == 'account_profile' }}"><i class="fas fa-user-cog"></i> Profile</a>
+</div>

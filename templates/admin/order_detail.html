@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Order {{ order.reference }} | UniPro Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+    <div class="admin-header">
+        <h2><i class="fas fa-receipt"></i> Order {{ order.reference }} {% include "_order_status.html" %}</h2>
+        <a href="{{ url_for('admin_orders') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> All orders</a>
+    </div>
+
+    {% include "admin/_nav.html" %}
+
+    <div class="dash-grid">
+        <section class="panel">
+            <div class="panel-header"><h3>Customer</h3></div>
+            <dl class="details">
+                <dt>Name</dt><dd>{{ order.user.full_name }}</dd>
+                <dt>Email</dt><dd><a href="mailto:{{ order.user.email }}">{{ order.user.email }}</a></dd>
+                <dt>Phone</dt><dd><a href="tel:{{ order.user.phone }}">{{ order.user.phone }}</a></dd>
+                <dt>Residence</dt><dd>{{ order.user.residence_address }}</dd>
+                <dt>Home campus</dt><dd>{{ order.user.campus }}</dd>
+            </dl>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header"><h3>Order</h3></div>
+            <dl class="details">
+                <dt>Placed</dt><dd>{{ order.created_at.strftime('%d %b %Y, %H:%M') }}</dd>
+                <dt>Collect at</dt><dd>{{ order.collection_campus }}</dd>
+                <dt>Notes</dt><dd>{{ order.notes or '—' }}</dd>
+            </dl>
+            {% if order.status != 'cancelled' %}
+            <form method="post" class="status-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label for="status">Update status</label>
+                <div class="status-form-row">
+                    <select id="status" name="status">
+                        {% for key, label in statuses.items() %}
+                        <option value="{{ key }}" {% if key == order.status %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+                <span class="hint">Cancelling returns the items to stock.</span>
+            </form>
+            {% endif %}
+        </section>
+    </div>
+
+    <section class="panel">
+        <div class="panel-header"><h3>Items</h3></div>
+        {% include "_order_items.html" %}
+    </section>
+</div>
+{% endblock %}

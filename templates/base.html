@@ -46,8 +46,8 @@
                         <li><a href="{{ url_for('index') }}#home" class="nav-link">Home</a></li>
                         <li><a href="{{ url_for('index') }}#products" class="nav-link">Products</a></li>
                         <li><a href="{{ url_for('index') }}#contact" class="nav-link">Contact</a></li>
-                        {% if current_user.is_authenticated and current_user.is_admin %}
-                        <li><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
+                        {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('admin_dashboard' if current_user.is_admin else 'account_dashboard') }}">Dashboard</a></li>
                         {% endif %}
                     </ul>
                 </nav>
@@ -55,7 +55,7 @@
                 <div class="header-actions">
                     <div class="account-links">
                         {% if current_user.is_authenticated %}
-                            <span class="greeting"><i class="fas fa-user-circle"></i> {{ current_user.name }}</span>
+                            <a class="greeting" href="{{ url_for('admin_dashboard' if current_user.is_admin else 'account_dashboard') }}"><i class="fas fa-user-circle"></i> {{ current_user.name }}</a>
                             <form class="inline-form" method="post" action="{{ url_for('logout') }}">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-outline btn-sm">Log out</button>
@@ -65,10 +65,10 @@
                             <a href="{{ url_for('register') }}" class="btn btn-accent btn-sm">Sign up</a>
                         {% endif %}
                     </div>
-                    <div class="cart-icon">
+                    <a class="cart-icon" href="{{ url_for('cart') }}" aria-label="Cart, {{ cart_count }} item{{ '' if cart_count == 1 else 's' }}">
                         <i class="fas fa-shopping-bag"></i>
-                        <span class="cart-count">0</span>
-                    </div>
+                        <span class="cart-count">{{ cart_count }}</span>
+                    </a>
                 </div>
             </div>
         </div>

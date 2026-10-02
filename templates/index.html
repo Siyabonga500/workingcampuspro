@@ -30,7 +30,7 @@
         <!-- Products Grid -->
         <div class="products-grid" id="products-container">
             {% for product in products %}
-            <div class="product-card" data-category="{{ product.category }}" data-product-id="{{ product.id }}" data-quantity="{{ product.quantity }}">
+            <div class="product-card" id="product-{{ product.id }}" data-category="{{ product.category }}">
                 <div class="product-slider" data-slider>
                     <div class="slider-container">
                         {% for image in product.images %}
@@ -89,10 +89,13 @@
                         <span class="campus-badge">{{ product.campus }}</span>
                     </div>
 
-                    <button type="button" class="btn-add-to-cart" data-name="{{ product.name }}"
-                            {% if product.status == 'out-of-stock' %}disabled{% endif %}>
-                        {{ 'Out of Stock' if product.status == 'out-of-stock' else 'Add to Cart' }}
-                    </button>
+                    <form method="post" action="{{ url_for('cart_add', product_id=product.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn-add-to-cart"
+                                {% if product.status == 'out-of-stock' %}disabled{% endif %}>
+                            {{ 'Out of Stock' if product.status == 'out-of-stock' else 'Add to Cart' }}
+                        </button>
+                    </form>
                 </div>
             </div>
             {% else %}

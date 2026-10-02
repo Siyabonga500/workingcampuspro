@@ -11,10 +11,24 @@ Durban University of Technology (DUT) campuses.
   name, surname, gender, phone number, residence address, DUT campus
   (Steve Biko, Ritson, ML Sultan, City, Brickfield, Riverside, Indumiso),
   password and confirm password. Passwords are stored hashed.
-- **Admin area** (`/admin`): admins can add, edit and delete items, upload
-  several photos per item, remove photos, view registered users and grant or
-  remove admin access. Uploaded photos are auto-rotated, resized to max
-  1200px and converted to WebP so the home page loads quickly.
+- **Cart & orders**: anyone can add items to the cart; customers log in to
+  place an order and choose the DUT campus where they'll collect it
+  (payment on collection). Stock is reserved when the order is placed and
+  returned if it is cancelled.
+- **Customer dashboard** (`/account`): active-order tracking (Placed →
+  Confirmed → Ready → Collected), order history with details, total spent,
+  cart summary, editable profile and password change. Pending orders can be
+  cancelled by the customer.
+- **Admin dashboard** (`/admin`): revenue, open orders, customers and stock
+  at a glance; orders by status, sales by collection campus, recent orders,
+  stock alerts, best sellers and new customers.
+  - **Orders**: filter by status, view customer contact details and update
+    an order's status.
+  - **Items**: add, edit and delete items, upload several photos per item and
+    remove photos. Photos are auto-rotated, resized to max 1200px and
+    converted to WebP so the home page loads quickly.
+  - **Customers**: view registered users and their order counts, and grant or
+    remove admin access.
 
 ## Running locally
 

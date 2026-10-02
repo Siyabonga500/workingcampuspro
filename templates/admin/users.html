@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container admin-page">
     <div class="admin-header">
-        <h2><i class="fas fa-users"></i> Registered users</h2>
+        <h2><i class="fas fa-users"></i> Customers</h2>
     </div>
 
     {% include "admin/_nav.html" %}
@@ -20,6 +20,7 @@
                     <th>Phone</th>
                     <th>Residence</th>
                     <th>Campus</th>
+                    <th>Orders</th>
                     <th>Joined</th>
                     <th></th>
                 </tr>
@@ -33,6 +34,7 @@
                     <td>{{ user.phone }}</td>
                     <td>{{ user.residence_address }}</td>
                     <td>{{ user.campus }}</td>
+                    <td>{{ order_counts.get(user.id, 0) }}</td>
                     <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
                     <td>
                         {% if user.id != current_user.id %}
@@ -44,7 +46,7 @@
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="8" style="text-align:center;padding:30px;">No users yet.</td></tr>
+                <tr><td colspan="9" style="text-align:center;padding:30px;">No users yet.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

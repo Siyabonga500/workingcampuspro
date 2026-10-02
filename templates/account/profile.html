@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile | UniPro Marketplace{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+    <div class="admin-header">
+        <h2><i class="fas fa-user-cog"></i> My profile</h2>
+    </div>
+
+    {% include "account/_nav.html" %}
+
+    <div class="dash-grid wide-left">
+        <section class="panel">
+            <div class="panel-header"><h3>Personal details</h3></div>
+            <form method="post" action="{{ url_for('account_profile') }}" novalidate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" value="{{ form.get('name', '') }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="surname">Surname</label>
+                        <input type="text" id="surname" name="surname" value="{{ form.get('surname', '') }}" required>
+                    </div>
+                    <div class="form-group full">
+                        <label for="email">Email address</label>
+                        <input type="email" id="email" value="{{ current_user.email }}" disabled>
+                        <span class="hint">Your email is your login and can't be changed here.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender" required>
+                            {% for g in genders %}
+                            <option value="{{ g }}" {% if form.get('gender') == g %}selected{% endif %}>{{ g }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone number</label>
+                        <input type="tel" id="phone" name="phone" value="{{ form.get('phone', '') }}" required>
+                    </div>
+                    <div class="form-group full">
+                        <label for="residence_address">Residence address</label>
+                        <textarea id="residence_address" name="residence_address" rows="2" required>{{ form.get('residence_address', '') }}</textarea>
+                    </div>
+                    <div class="form-group full">
+                        <label for="campus">DUT campus</label>
+                        <select id="campus" name="campus" required>
+                            {% for c in DUT_CAMPUSES %}
+                            <option value="{{ c }}" {% if form.get('campus') == c %}selected{% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save details</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header"><h3>Change password</h3></div>
+            <form method="post" action="{{ url_for('account_password') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    <div class="form-group">
+                        <label for="current_password">Current password</label>
+                        <input type="password" id="current_password" name="current_password" autocomplete="current-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_password">New password</label>
+                        <input type="password" id="new_password" name="new_password" minlength="8" autocomplete="new-password" required>
+                        <span class="hint">At least 8 characters.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm new password</label>
+                        <input type="password" id="confirm_password" name="confirm_password" minlength="8" autocomplete="new-password" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-outline"><i class="fas fa-key"></i> Change password</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+{% endblock %}

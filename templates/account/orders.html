@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders | UniPro Marketplace{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+    <div class="admin-header">
+        <h2><i class="fas fa-receipt"></i> My orders</h2>
+    </div>
+
+    {% include "account/_nav.html" %}
+
+    {% with detail_endpoint='account_order', show_customer=False %}
+    {% include "_orders_table.html" %}
+    {% endwith %}
+</div>
+{% endblock %}

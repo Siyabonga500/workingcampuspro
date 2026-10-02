@@ -1,0 +1,3 @@
+{# Order status badge: icon + label so status is never shown by colour alone #}
+{% set icons = {'pending': 'fa-hourglass-half', 'confirmed': 'fa-check', 'ready': 'fa-box-open', 'completed': 'fa-check-double', 'cancelled': 'fa-times'} %}
+<span class="order-status order-status-{{ order.status }}"><i class="fas {{ icons.get(order.status, 'fa-circle') }}"></i> {{ order.status_label }}</span>

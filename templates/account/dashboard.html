@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}My Dashboard | UniPro Marketplace{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+    <div class="admin-header">
+        <div>
+            <h2>Hi {{ current_user.name }} 👋</h2>
+            <p class="muted"><i class="fas fa-map-marker-alt"></i> {{ current_user.campus }}</p>
+        </div>
+        <a href="{{ url_for('index') }}#products" class="btn btn-accent"><i class="fas fa-store"></i> Continue shopping</a>
+    </div>
+
+    {% include "account/_nav.html" %}
+
+    <div class="stats-grid">
+        <a class="stat-card stat-link" href="{{ url_for('account_orders') }}">
+            <div class="label"><i class="fas fa-truck"></i> Active orders</div>
+            <div class="value">{{ stats.active }}</div>
+            <div class="sub">Pending, confirmed or ready</div>
+        </a>
+        <a class="stat-card stat-link" href="{{ url_for('account_orders') }}">
+            <div class="label"><i class="fas fa-receipt"></i> Total orders</div>
+            <div class="value">{{ stats.orders }}</div>
+            <div class="sub">Since you joined</div>
+        </a>
+        <div class="stat-card">
+            <div class="label"><i class="fas fa-coins"></i> Total spent</div>
+            <div class="value">R {{ '{:,.2f}'.format(stats.spent|float) }}</div>
+            <div class="sub">Excludes cancelled orders</div>
+        </div>
+        <a class="stat-card stat-link" href="{{ url_for('cart') }}">
+            <div class="label"><i class="fas fa-shopping-bag"></i> In your cart</div>
+            <div class="value">{{ stats.cart }}</div>
+            <div class="sub">{{ 'Ready to check out' if stats.cart else 'Your cart is empty' }}</div>
+        </a>
+    </div>
+
+    {% if active_orders %}
+    <section class="panel">
+        <div class="panel-header"><h3>Order tracking</h3></div>
+        <div class="tracking-list">
+            {% for order in active_orders %}
+            {% set steps = ['pending', 'confirmed', 'ready', 'completed'] %}
+            {% set current = steps.index(order.status) %}
+            <a class="tracking-card" href="{{ url_for('account_order', order_id=order.id) }}">
+                <div class="tracking-head">
+                    <strong>{{ order.reference }}</strong>
+                    <span class="muted">{{ order.item_count }} item{{ '' if order.item_count == 1 else 's' }} · R {{ '%.2f'|format(order.total) }}</span>
+                </div>
+                <ol class="tracker">
+                    {% for step in steps %}
+                    <li class="{{ 'done' if loop.index0 < current else ('current' if loop.index0 == current else '') }}">{{ {'pending': 'Placed', 'confirmed': 'Confirmed', 'ready': 'Ready', 'completed': 'Collected'}[step] }}</li>
+                    {% endfor %}
+                </ol>
+                <div class="muted"><i class="fas fa-map-marker-alt"></i> Collect at {{ order.collection_campus }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Recent orders</h3>
+            <a href="{{ url_for('account_orders') }}">View all</a>
+        </div>
+        {% if recent_orders %}
+        {% with orders=recent_orders, detail_endpoint='account_order', show_customer=False %}
+        {% include "_orders_table.html" %}
+        {% endwith %}
+        {% else %}
+        <p class="panel-empty">You haven't ordered anything yet. <a href="{{ url_for('index') }}#products">Browse the shop</a>.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <h3>My details</h3>
+            <a href="{{ url_for('account_profile') }}">Edit</a>
+        </div>
+        <dl class="details two-col">
+            <dt>Name</dt><dd>{{ current_user.full_name }}</dd>
+            <dt>Email</dt><dd>{{ current_user.email }}</dd>
+            <dt>Phone</dt><dd>{{ current_user.phone }}</dd>
+            <dt>Gender</dt><dd>{{ current_user.gender }}</dd>
+            <dt>Residence</dt><dd>{{ current_user.residence_address }}</dd>
+            <dt>Campus</dt><dd>{{ current_user.campus }}</dd>
+        </dl>
+    </section>
+</div>
+{% endblock %}

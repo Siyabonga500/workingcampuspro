@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Your Cart | UniPro Marketplace{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+    <div class="admin-header">
+        <h2><i class="fas fa-shopping-bag"></i> Your cart</h2>
+        <a href="{{ url_for('index') }}#products" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Continue shopping</a>
+    </div>
+
+    {% if current_user.is_authenticated and not current_user.is_admin %}
+    {% include "account/_nav.html" %}
+    {% endif %}
+
+    {% if lines %}
+    <div class="dash-grid wide-left">
+        <section class="panel">
+            <div class="table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>Item</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        {% set product = line.product %}
+                        <tr>
+                            <td>
+                                <div class="item-cell">
+                                    {% if product.images %}
+                                    <img class="table-thumb" src="{{ url_for('static', filename='uploads/' ~ product.images[0].filename) }}" alt="">
+                                    {% endif %}
+                                    <span><strong>{{ product.name }}</strong><br><small class="muted">{{ product.quantity }} in stock</small></span>
+                                </div>
+                            </td>
+                            <td>R {{ '%.2f'|format(product.price) }}</td>
+                            <td>
+                                <form method="post" action="{{ url_for('cart_update', product_id=product.id) }}" class="qty-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="number" name="quantity" value="{{ line.quantity }}" min="0" max="{{ product.quantity }}" aria-label="Quantity">
+                                    <button type="submit" class="btn btn-outline btn-sm">Update</button>
+                                </form>
+                            </td>
+                            <td>R {{ '%.2f'|format(line.line_total) }}</td>
+                            <td>
+                                <form method="post" action="{{ url_for('cart_update', product_id=product.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="quantity" value="0">
+                                    <button type="submit" class="btn btn-danger btn-sm" aria-label="Remove {{ product.name }}"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header"><h3>Checkout</h3></div>
+            <div class="cart-total"><span>Total</span><strong>R {{ '%.2f'|format(total) }}</strong></div>
+            {% if current_user.is_authenticated %}
+            <form method="post" action="{{ url_for('checkout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    <div class="form-group">
+                        <label for="collection_campus">Collect at</label>
+                        <select id="collection_campus" name="collection_campus" required>
+                            {% for c in DUT_CAMPUSES %}
+                            <option value="{{ c }}" {% if c == default_campus %}selected{% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notes <span class="hint">(optional)</span></label>
+                        <textarea id="notes" name="notes" rows="2" maxlength="500" placeholder="Size, colour, best time to collect…"></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-accent" style="width: 100%;"><i class="fas fa-check"></i> Place order</button>
+                </div>
+                <p class="hint" style="margin-top: 10px;">Pay when you collect. We'll update your order status on your dashboard.</p>
+            </form>
+            {% else %}
+            <p class="muted" style="margin-bottom: 14px;">Log in or create an account to place your order.</p>
+            <div class="form-actions" style="margin-top: 0;">
+                <a href="{{ url_for('login', next=url_for('cart')) }}" class="btn btn-primary">Log in</a>
+                <a href="{{ url_for('register') }}" class="btn btn-accent">Sign up</a>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-shopping-bag"></i>
+        <p>Your cart is empty.</p>
+        <p><a href="{{ url_for('index') }}#products" class="btn btn-primary" style="margin-top: 12px;">Browse items</a></p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

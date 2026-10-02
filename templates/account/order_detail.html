@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Order {{ order.reference }} | UniPro Marketplace{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+    <div class="admin-header">
+        <h2><i class="fas fa-receipt"></i> Order {{ order.reference }} {% include "_order_status.html" %}</h2>
+        <a href="{{ url_for('account_orders') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> My orders</a>
+    </div>
+
+    {% include "account/_nav.html" %}
+
+    <section class="panel">
+        <dl class="details two-col">
+            <dt>Placed</dt><dd>{{ order.created_at.strftime('%d %b %Y, %H:%M') }}</dd>
+            <dt>Collect at</dt><dd>{{ order.collection_campus }}</dd>
+            <dt>Notes</dt><dd>{{ order.notes or '—' }}</dd>
+            <dt>Last update</dt><dd>{{ order.updated_at.strftime('%d %b %Y, %H:%M') }}</dd>
+        </dl>
+        {% if order.can_cancel %}
+        <form method="post" action="{{ url_for('account_cancel_order', order_id=order.id) }}" onsubmit="return confirm('Cancel this order?');" style="margin-top: 16px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Cancel order</button>
+            <span class="hint">You can cancel until the order is confirmed.</span>
+        </form>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-header"><h3>Items</h3></div>
+        {% include "_order_items.html" %}
+    </section>
+</div>
+{% endblock %}
