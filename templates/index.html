@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h2>UniPro Marketplace</h2>
+            <p>Your premier destination for quality clothing with detailed product views. Check availability, multiple angles, and gender specifications.</p>
+
+            <div class="campuses">
+                <div class="campus-tag"><i class="fas fa-map-marker-alt"></i> Durban University of Technology</div>
+                <div class="campus-tag"><i class="fas fa-map-marker-alt"></i> Ritson Campus</div>
+                <div class="campus-tag"><i class="fas fa-map-marker-alt"></i> Resides at Disney Heights</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <!-- Filter Section -->
+        <section class="filter-section" id="products">
+            <h3>Filter by Category</h3>
+            <div class="filter-options">
+                <button class="filter-btn active" data-filter="all">All Items</button>
+                {% for key, label in CATEGORIES.items() %}
+                <button class="filter-btn" data-filter="{{ key }}">{{ label }}</button>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Products Grid -->
+        <div class="products-grid" id="products-container">
+            {% for product in products %}
+            <div class="product-card" data-category="{{ product.category }}" data-product-id="{{ product.id }}" data-quantity="{{ product.quantity }}">
+                <div class="product-slider" data-slider>
+                    <div class="slider-container">
+                        {% for image in product.images %}
+                        <div class="slide">
+                            <img src="{{ url_for('static', filename='uploads/' ~ image.filename) }}"
+                                 alt="{{ product.name }} - View {{ loop.index }}"
+                                 loading="{{ 'eager' if loop.first else 'lazy' }}"
+                                 decoding="async">
+                        </div>
+                        {% else %}
+                        <div class="slide no-image">
+                            <i class="far fa-image"></i>
+                            <span>No photo yet</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if product.images|length > 1 %}
+                    <div class="slide-number">
+                        <span class="current-slide">1</span>/<span class="total-slides">{{ product.images|length }}</span>
+                    </div>
+                    <div class="slider-nav">
+                        <button type="button" class="slider-btn prev-slide" aria-label="Previous image">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button type="button" class="slider-btn next-slide" aria-label="Next image">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="slider-dots">
+                        {% for image in product.images %}
+                        <button type="button" class="slider-dot{% if loop.first %} active{% endif %}" data-index="{{ loop.index0 }}" aria-label="Show image {{ loop.index }}"></button>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-header">
+                        <span class="product-category">{{ product.category_label }}</span>
+                        <span class="gender-badge gender-{{ product.gender }}">{{ product.gender_label }}</span>
+                    </div>
+                    <h3 class="product-title">{{ product.name }}</h3>
+                    {% if product.description %}
+                    <p class="product-description">{{ product.description }}</p>
+                    {% endif %}
+                    <div class="product-price">R {{ '%.2f'|format(product.price) }}</div>
+
+                    <div class="availability">
+                        <div class="status-dot status-{{ product.status }}"></div>
+                        <span class="status-text">{{ product.status_label }}</span>
+                    </div>
+
+                    <div class="quantity">Available: {{ product.quantity }} units</div>
+
+                    <div class="product-meta">
+                        <span><i class="far fa-clock"></i> Delivery: 2-3 days</span>
+                        <span class="campus-badge">{{ product.campus }}</span>
+                    </div>
+
+                    <button type="button" class="btn-add-to-cart" data-name="{{ product.name }}"
+                            {% if product.status == 'out-of-stock' %}disabled{% endif %}>
+                        {{ 'Out of Stock' if product.status == 'out-of-stock' else 'Add to Cart' }}
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <p>No items are listed yet. Check back soon!</p>
+            </div>
+            {% endfor %}
+            <div class="empty-state" id="no-filter-results" hidden>
+                <i class="fas fa-search"></i>
+                <p>No items in this category yet.</p>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <section class="contact-section" id="contact">
+            <h3>Get in Touch with UniPro</h3>
+            <div class="contact-details">
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h4>Visit Our Store</h4>
+                    <p>UniPro Main Store<br>Business Campus</p>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <h4>Call / WhatsApp</h4>
+                    <p>+27 63 303 2394<br>Mon-Fri 9AM-6PM</p>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <h4>Social Media</h4>
+                    <p>siya61512@gmail.com<br>DM for inquiries</p>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}

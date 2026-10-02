@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Users | UniPro Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+    <div class="admin-header">
+        <h2><i class="fas fa-users"></i> Registered users</h2>
+    </div>
+
+    {% include "admin/_nav.html" %}
+
+    <div class="table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Gender</th>
+                    <th>Phone</th>
+                    <th>Residence</th>
+                    <th>Campus</th>
+                    <th>Joined</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td><strong>{{ user.full_name }}</strong> {% if user.is_admin %}<span class="badge-admin">ADMIN</span>{% endif %}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.gender }}</td>
+                    <td>{{ user.phone }}</td>
+                    <td>{{ user.residence_address }}</td>
+                    <td>{{ user.campus }}</td>
+                    <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
+                    <td>
+                        {% if user.id != current_user.id %}
+                        <form method="post" action="{{ url_for('admin_toggle_admin', user_id=user.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-outline btn-sm">{{ 'Remove admin' if user.is_admin else 'Make admin' }}</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" style="text-align:center;padding:30px;">No users yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

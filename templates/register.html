@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account | UniPro Marketplace{% endblock %}
+
+{% block content %}
+<div class="container form-page">
+    <div class="form-card">
+        <h2>Create your UniPro account</h2>
+        <p class="subtitle">Sign up with your email address to shop across all DUT campuses.</p>
+
+        <form method="post" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" value="{{ form.get('name', '') }}" autocomplete="given-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="surname">Surname</label>
+                    <input type="text" id="surname" name="surname" value="{{ form.get('surname', '') }}" autocomplete="family-name" required>
+                </div>
+
+                <div class="form-group full">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" name="email" value="{{ form.get('email', '') }}" autocomplete="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" required>
+                        <option value="" disabled {% if not form.get('gender') %}selected{% endif %}>Select gender</option>
+                        {% for g in genders %}
+                        <option value="{{ g }}" {% if form.get('gender') == g %}selected{% endif %}>{{ g }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone number</label>
+                    <input type="tel" id="phone" name="phone" value="{{ form.get('phone', '') }}" placeholder="e.g. 063 123 4567" autocomplete="tel" required>
+                </div>
+
+                <div class="form-group full">
+                    <label for="residence_address">Residence address</label>
+                    <textarea id="residence_address" name="residence_address" rows="2" autocomplete="street-address" required>{{ form.get('residence_address', '') }}</textarea>
+                </div>
+
+                <div class="form-group full">
+                    <label for="campus">DUT campus</label>
+                    <select id="campus" name="campus" required>
+                        <option value="" disabled {% if not form.get('campus') %}selected{% endif %}>Select your campus</option>
+                        {% for c in DUT_CAMPUSES %}
+                        <option value="{{ c }}" {% if form.get('campus') == c %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" minlength="8" autocomplete="new-password" required>
+                    <span class="hint">At least 8 characters.</span>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" minlength="8" autocomplete="new-password" required>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-user-plus"></i> Create account</button>
+            </div>
+            <p class="form-footer">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+        </form>
+    </div>
+</div>
+{% endblock %}

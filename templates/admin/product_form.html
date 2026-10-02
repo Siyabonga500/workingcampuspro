@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if product else 'Add' }} Item | UniPro Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+    <div class="admin-header">
+        <h2>{% if product %}<i class="fas fa-pen"></i> Edit “{{ product.name }}”{% else %}<i class="fas fa-plus"></i> Add a new item{% endif %}</h2>
+        {% if product %}<a href="{{ url_for('index') }}#products" class="btn btn-outline">View on shop</a>{% endif %}
+    </div>
+
+    {% include "admin/_nav.html" %}
+
+    <div class="form-card" style="max-width: 860px;">
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label for="name">Item name</label>
+                    <input type="text" id="name" name="name" value="{{ form.get('name', '') }}" required>
+                </div>
+
+                <div class="form-group full">
+                    <label for="description">Description <span class="hint">(optional)</span></label>
+                    <textarea id="description" name="description" rows="3">{{ form.get('description', '') }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        {% for key, label in CATEGORIES.items() %}
+                        <option value="{{ key }}" {% if form.get('category') == key %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" required>
+                        {% for key, label in product_genders.items() %}
+                        <option value="{{ key }}" {% if form.get('gender', 'unisex') == key %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Price (R)</label>
+                    <input type="number" id="price" name="price" min="0" step="0.01" value="{{ form.get('price', '') }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantity in stock</label>
+                    <input type="number" id="quantity" name="quantity" min="0" step="1" value="{{ form.get('quantity', '') }}" required>
+                    <span class="hint">3 or fewer shows as “Low Stock”, 0 as “Out of Stock”.</span>
+                </div>
+
+                <div class="form-group full">
+                    <label for="campus">Campus</label>
+                    <select id="campus" name="campus" required>
+                        {% for c in DUT_CAMPUSES %}
+                        <option value="{{ c }}" {% if form.get('campus') == c %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group full">
+                    <label for="images">{{ 'Add more photos' if product else 'Photos' }}</label>
+                    <input type="file" id="images" name="images" accept="image/png,image/jpeg,image/webp,image/gif" multiple>
+                    <span class="hint">Select several photos at once to show multiple angles. PNG, JPG, WEBP or GIF. Photos are resized automatically.</span>
+                    <div class="upload-preview" id="upload-preview"></div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ 'Save changes' if product else 'Add item' }}</button>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+
+        {% if product and product.images %}
+        <h3 style="margin: 30px 0 12px;">Current photos</h3>
+        <div class="image-manager">
+            {% for image in product.images %}
+            <div class="image-tile">
+                <img src="{{ url_for('static', filename='uploads/' ~ image.filename) }}" alt="Photo {{ loop.index }}">
+                <form method="post" action="{{ url_for('admin_delete_image', image_id=image.id) }}" onsubmit="return confirm('Remove this photo?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger btn-sm" aria-label="Remove photo"><i class="fas fa-times"></i></button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

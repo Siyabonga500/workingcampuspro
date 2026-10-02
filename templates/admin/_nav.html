@@ -1,0 +1,5 @@
+<div class="admin-tabs">
+    <a href="{{ url_for('admin_dashboard') }}" class="{{ 'active' if request.endpoint == 'admin_dashboard' }}"><i class="fas fa-box"></i> Items</a>
+    <a href="{{ url_for('admin_new_product') }}" class="{{ 'active' if request.endpoint == 'admin_new_product' }}"><i class="fas fa-plus"></i> Add item</a>
+    <a href="{{ url_for('admin_users') }}" class="{{ 'active' if request.endpoint == 'admin_users' }}"><i class="fas fa-users"></i> Users</a>
+</div>
